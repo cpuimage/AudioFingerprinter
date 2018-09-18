@@ -1,2 +1,2 @@
 # AudioFingerprinter
-an efficient algorithm implementation for acoustic fingerprinting
+an efficient algorithm for acoustic fingerprinting implementation in c
