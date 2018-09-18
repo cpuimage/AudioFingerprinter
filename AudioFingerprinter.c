@@ -204,8 +204,7 @@ dilateProc(const float *_src, float *dst, size_t width, size_t height, const uns
 
 int CalculateAudioHashes(float *audioBuffer, int audioBufferLen, HashObj **hashOffsets, int sampleRate,
                          float windowSizeSeconds, float overlapRatio, size_t fanValue, float ampMin,
-                         size_t peakNeighbourhoodSize, int minHashTimeDelta, int maxHashTimeDelta, bool peakSort,
-                         int fingerprintSize) {
+                         size_t peakNeighbourhoodSize, int minHashTimeDelta, int maxHashTimeDelta, bool peakSort) {
 
     int16_t nfft = (int16_t) roundf(windowSizeSeconds * sampleRate);
     nfft += nfft % 2;
@@ -265,8 +264,7 @@ int CalculateAudioHashes(float *audioBuffer, int audioBufferLen, HashObj **hashO
     getPeaks(spectrum, specBins, bins, peaks, &peaksSize, peakNeighbourhoodSize, ampMin);
     free(spectrum);
     size_t hash_counts = (size_t) buildHashes(peaks, peaksSize, hashOffsets, peakSort, fanValue, minHashTimeDelta,
-                                              maxHashTimeDelta,
-                                              (size_t) fingerprintSize);
+                                              maxHashTimeDelta);
     free(peaks);
     return (int) hash_counts;
 }
@@ -402,16 +400,15 @@ void buildHash(unsigned char *hashSeed, int16_t freq1, int16_t freq2, int16_t tD
 
 int buildHashes(Peak *peaks, size_t peaksSize,
                 HashObj **hashOffsets, bool peakSort, size_t fanValue,
-                int minHashTimeDelta, int maxHashTimeDelta, size_t fingerprintSize) {
+                int minHashTimeDelta, int maxHashTimeDelta) {
     int hashInit = (int) (peaksSize);
     HashObj *hashOffset = (HashObj *) calloc((size_t) hashInit, sizeof(HashObj));
     if (hashOffset == NULL) return 0;
     if (peakSort) {
         qsort(peaks, peaksSize, sizeof(Peak), cmpPeak);
     }
-    const size_t defHashLength = 6;
     int hashCounts = 0;
-    size_t hashLength = (fingerprintSize > defHashLength) ? defHashLength : fingerprintSize;
+    size_t fingerprintSize = 6;
     for (size_t i = 0; i < peaksSize; ++i) {
         for (size_t j = 1; j < fanValue; ++j) {
             if (i + j < peaksSize) {
@@ -433,7 +430,7 @@ int buildHashes(Peak *peaks, size_t peaksSize,
                             return 0;
                         }
                     }
-                    unsigned char *hash = (unsigned char *) calloc(hashLength, sizeof(unsigned char));
+                    unsigned char *hash = (unsigned char *) calloc(fingerprintSize, sizeof(unsigned char));
                     if (hash == NULL) {
                         cleanHash(hashOffset, hashCounts);
                         return 0;
@@ -444,21 +441,21 @@ int buildHashes(Peak *peaks, size_t peaksSize,
                             hashCounts++;
                         }
                         HashObj hashObj;
-                        hashObj.size = hashLength;
+                        hashObj.size = fingerprintSize;
                         hashObj.buffer = hash;
                         hashOffset[hashCounts] = hashObj;
                         hashCounts++;
                     } else {
                         if (hashOffset[time1].buffer == NULL) {
                             hashOffset[time1].buffer = hash;
-                            hashOffset[time1].size = hashLength;
+                            hashOffset[time1].size = fingerprintSize;
                         } else {
-                            size_t newHashLength = hashOffset[time1].size + hashLength;
+                            size_t newHashLength = hashOffset[time1].size + fingerprintSize;
                             unsigned char *buffer = (unsigned char *) realloc(hashOffset[time1].buffer,
                                                                               newHashLength * sizeof(unsigned char));
                             if (buffer != NULL) {
                                 hashOffset[time1].buffer = buffer;
-                                memcpy(hashOffset[time1].buffer + hashOffset[time1].size, hash, hashLength);
+                                memcpy(hashOffset[time1].buffer + hashOffset[time1].size, hash, fingerprintSize);
                                 hashOffset[time1].size = newHashLength;
                                 free(hash);
                             } else {
@@ -536,7 +533,6 @@ int main(int argc, char **argv) {
     int minHashTimeDelta = 0;
     int maxHashTimeDelta = 200;
     bool peakSort = true;
-    int fingerprintSize = 10;
     HashObj *hashOffsets = NULL;
     int hash_count = 0;
     double startTime = now();
@@ -548,8 +544,7 @@ int main(int argc, char **argv) {
                                       peakNeighbourhoodSize,
                                       minHashTimeDelta,
                                       maxHashTimeDelta,
-                                      peakSort,
-                                      fingerprintSize);
+                                      peakSort);
     double time_interval = calcElapsed(startTime, now());
     free(data_in);
     printf("[%s] Fingerprinter:\n", filename);

@@ -26,8 +26,7 @@ typedef struct {
 int CalculateAudioHashes(float *audioBuffer, int audioBufferLen, HashObj **hashOffsets,
                          int sampleRate, float windowSizeSeconds, float overlapRatio, size_t fanValue,
                          float ampMin,
-                         size_t peakNeighbourhoodSize, int minHashTimeDelta, int maxHashTimeDelta, bool peakSort,
-                         int fingerprintSize);
+                         size_t peakNeighbourhoodSize, int minHashTimeDelta, int maxHashTimeDelta, bool peakSort);
 
 
 bool filteredPeaks(float *spectrum, float *detectedPeaks, int16_t specBins, int16_t bins, Peak *peaks,
@@ -52,7 +51,7 @@ bool getPeaks(float *spectrum, int16_t specBins, int16_t bins, Peak *peaks, size
               float ampMin);
 
 int buildHashes(Peak *peaks, size_t peaksSize, HashObj **hashOffsets, bool peakSort,
-                size_t fanValue, int minHashTimeDelta, int maxHashTimeDelta, size_t fingerprintSize);
+                size_t fanValue, int minHashTimeDelta, int maxHashTimeDelta);
 
 void buildHash(unsigned char *hashSeed, int16_t freq1, int16_t freq2, int16_t tDelta);
 
