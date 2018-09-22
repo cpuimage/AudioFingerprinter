@@ -1838,11 +1838,10 @@ void stb_fft_c2r_exec(stb_fft_real_plan *plan, const cmplx *input, stb_real_t *o
                        (plan->twiddles[c - 1].imag * (input[c].imag - t.imag));
         stb_real_t i = (plan->twiddles[c - 1].real * (input[c].imag - t.imag)) -
                        ((input[c].real - t.real) * plan->twiddles[c - 1].imag);
-        plan->buffer[c].real = r + (t.real + input[c].real);
-        plan->buffer[c].imag = i + (t.imag + input[c].imag);
-        plan->buffer[n - c].real = (t.real + input[c].real) - r;
-        plan->buffer[n - c].imag = (t.imag + input[c].imag) - i;
-        plan->buffer[n - c].imag = -plan->buffer[n - c].imag;
+        plan->buffer[c].real = (r + (t.real + input[c].real)) * 0.5;
+        plan->buffer[c].imag = (i + (t.imag + input[c].imag)) * 0.5;
+        plan->buffer[n - c].real = ((t.real + input[c].real) - r) * 0.5;
+        plan->buffer[n - c].imag = -((t.imag + input[c].imag) - i) * 0.5;
     }
     stb_ifft_exec(plan->half_plan, plan->buffer, (cmplx *) output);
 }
