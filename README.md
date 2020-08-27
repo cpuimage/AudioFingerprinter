@@ -1,6 +1,10 @@
 # AudioFingerprinter
 an efficient algorithm for acoustic fingerprinting implementation in c
 
+# Reference  
+
+[Audio Fingerprinting with Python and Numpy](https://willdrevo.com/fingerprinting-and-audio-recognition-with-python/)
+
 # Donating
 
 If you found this project useful, consider buying me a coffee
